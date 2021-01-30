@@ -143,8 +143,9 @@ void fragment() {
 	
 	// Depthtest
 	float depth_tex = textureLod(DEPTH_TEXTURE, SCREEN_UV, 0.0).r;
-	float depth_tex_unpacked = depth_tex * 2.0 - 1.0;
-	float surface_dist = PROJECTION_MATRIX[3][2] / (depth_tex_unpacked + PROJECTION_MATRIX[2][2]);
+	vec4 world_pos = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, depth_tex * 2.0 - 1.0, 1.0);
+	world_pos.xyz /= world_pos.w;
+	float surface_dist = -world_pos.z;
 	float lava_depth = surface_dist + VERTEX.z;
 	
 	ROUGHNESS = roughness;
@@ -163,8 +164,6 @@ void fragment() {
 	ALBEDO = vec3(0.0);
 	EMISSION = final_lava * emission_energy;
 	
-	vec4 world_pos = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, depth_tex * 2.0 - 1.0, 1.0);
-	world_pos.xyz /= world_pos.w;
 	ALPHA = 1.0;
 	ALPHA *= clamp(1.0 - smoothstep(world_pos.z + edge_fade, world_pos.z, VERTEX.z), 0.0, 1.0);
 }
